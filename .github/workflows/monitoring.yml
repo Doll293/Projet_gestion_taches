@@ -15,8 +15,8 @@ jobs:
     - name: Vérification de la santé du backend
       uses: jtalk/url-health-check-action@v3
       with:
-        # URL à remplacer par votre véritable URL de production lors du déploiement réel
-        url: https://votre-app-production.com/health
+        # URL de production du backend
+        url: https://gestionnaire-taches-api.herokuapp.com/health
         # Statut HTTP attendu
         follow-redirect: true
         max-attempts: 3
@@ -28,8 +28,8 @@ jobs:
     - name: Vérification du frontend
       uses: jtalk/url-health-check-action@v3
       with:
-        # URL à remplacer par votre véritable URL de production lors du déploiement réel
-        url: https://votre-app-production.com
+        # URL de production du frontend
+        url: https://gestionnaire-taches.netlify.app
         follow-redirect: true
         max-attempts: 3
         retry-delay: 5
@@ -42,6 +42,7 @@ jobs:
       if: ${{ failure() }}
       # Ici, vous pourriez configurer une notification par email, Slack, etc.
       run: |
-        echo "Échec des vérifications de santé ! Vérifiez l'état des services."
-        # Exemple d'envoi de notification Slack (nécessite une configuration supplémentaire)
-        # curl -X POST -H 'Content-type: application/json' --data '{"text":"Alerte : l'application est en panne !"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+        echo "Échec des vérifications de santé ! L'application Gestionnaire de Tâches est potentiellement en panne."
+        echo "Vérifiez l'état des services et les logs de production."
+        # Pour activer les notifications Slack, décommentez et configurez le secret SLACK_WEBHOOK_URL
+        # curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"Alerte: Application Gestionnaire de Tâches en panne!\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
