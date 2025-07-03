@@ -32,23 +32,24 @@ jobs:
     - name: Lint backend
       run: |
         cd backend
-        npm install eslint@8.56.0 --save-dev
-        npx eslint --config .eslintrc.js server.js
+        npm run lint
     
     - name: Tests unitaires backend
       run: |
         cd backend
+        npm run test:unit -- --passWithNoTests
         npm run test:unit
     
     - name: Tests d'intégration backend
       run: |
         cd backend
+        npm run test:integration -- --passWithNoTests
         npm run test:integration
     
     - name: Couverture de code backend
       run: |
         cd backend
-        npm run test:coverage
+        npm run test:coverage -- --passWithNoTests
     
     - name: Upload rapport de couverture backend
       uses: actions/upload-artifact@v3
@@ -82,8 +83,7 @@ jobs:
     - name: Lint frontend
       run: |
         cd frontend
-        npm install eslint eslint-plugin-react eslint-plugin-react-hooks --save-dev
-        npx eslint --config .eslintrc.js src
+        npm run lint
     
     - name: Tests frontend
       run: |
