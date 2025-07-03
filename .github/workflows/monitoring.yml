@@ -16,7 +16,7 @@ jobs:
       uses: jtalk/url-health-check-action@v3
       with:
         # URL à remplacer par votre véritable URL de production lors du déploiement réel
-        url: https://votre-app-production.com/api/health
+        url: https://votre-app-production.com/health
         # Statut HTTP attendu
         follow-redirect: true
         max-attempts: 3
