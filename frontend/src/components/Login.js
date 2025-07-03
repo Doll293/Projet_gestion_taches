@@ -7,11 +7,25 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const validateForm = () => {
+    const errors = {};
+    if (!email) errors.email = "L'email est requis";
+    if (!password) errors.password = "Le mot de passe est requis";
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
     setError('');
 
@@ -20,7 +34,7 @@ const Login = () => {
     if (result.success) {
       navigate('/dashboard');
     } else {
-      setError(result.error);
+      setError(result.error || 'Identifiants invalides');
     }
     
     setLoading(false);
@@ -42,6 +56,7 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+          {validationErrors.email && <div className="validation-error">{validationErrors.email}</div>}
         </div>
 
         <div className="form-group">
@@ -53,6 +68,7 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          {validationErrors.password && <div className="validation-error">{validationErrors.password}</div>}
         </div>
 
         <button type="submit" disabled={loading}>

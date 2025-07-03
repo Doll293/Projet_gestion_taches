@@ -1,0 +1,98 @@
+name: CI - Tests et Analyse de Code
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configuration de Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    
+    - name: Installation des dépendances backend
+      run: |
+        cd backend
+        npm ci
+    
+    - name: Lint backend
+      run: |
+        cd backend
+        npm install eslint@8.56.0 --save-dev
+        npx eslint --config .eslintrc.js server.js
+    
+    - name: Tests unitaires backend
+      run: |
+        cd backend
+        npm run test:unit
+    
+    - name: Tests d'intégration backend
+      run: |
+        cd backend
+        npm run test:integration
+    
+    - name: Couverture de code backend
+      run: |
+        cd backend
+        npm run test:coverage
+    
+    - name: Upload rapport de couverture backend
+      uses: actions/upload-artifact@v3
+      with:
+        name: backend-coverage
+        path: backend/coverage/
+        retention-days: 5
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configuration de Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Installation des dépendances frontend
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Lint frontend
+      run: |
+        cd frontend
+        npm install eslint eslint-plugin-react eslint-plugin-react-hooks --save-dev
+        npx eslint --config .eslintrc.js src
+    
+    - name: Tests frontend
+      run: |
+        cd frontend
+        CI=true npm test -- --passWithNoTests
+    
+    - name: Upload rapport de couverture frontend
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-coverage
+        path: frontend/coverage/
+        retention-days: 5

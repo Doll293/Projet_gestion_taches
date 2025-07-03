@@ -1,0 +1,99 @@
+name: CD - Déploiement Continu
+
+on:
+  push:
+    branches: [ main ]
+  workflow_run:
+    workflows: ["CI - Tests et Analyse de Code"]
+    branches: [main]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configuration de Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+    
+    - name: Installation des dépendances backend
+      run: |
+        cd backend
+        npm ci
+    
+    - name: Installation des dépendances frontend
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Build du frontend
+      run: |
+        cd frontend
+        npm run build
+    
+    # Préparation des fichiers pour le déploiement
+    - name: Préparation au déploiement
+      run: |
+        echo "Préparation des fichiers pour le déploiement"
+        mkdir -p deploy
+        cp -r backend deploy/
+        cp -r frontend/build deploy/public
+    
+    # Pour un déploiement réel, décommentez l'une des sections suivantes selon votre stratégie de déploiement
+
+    # Option 1: Déploiement sur Heroku
+    # - name: Deploy to Heroku
+    #   uses: akhileshns/heroku-deploy@v3.12.12
+    #   with:
+    #     heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+    #     heroku_app_name: "votre-app-taches"
+    #     heroku_email: ${{ secrets.HEROKU_EMAIL }}
+    #     appdir: "deploy"
+    
+    # Option 2: Déploiement sur AWS
+    # - name: Configure AWS credentials
+    #   uses: aws-actions/configure-aws-credentials@v1
+    #   with:
+    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     aws-region: eu-west-3
+    # 
+    # - name: Deploy to AWS
+    #   run: |
+    #     aws s3 sync frontend/build s3://votre-bucket-s3/
+    #     aws elasticbeanstalk create-application-version --application-name votre-app --version-label ${{ github.sha }} --source-bundle S3Bucket="your-bucket",S3Key="backend.zip"
+    #     aws elasticbeanstalk update-environment --environment-name votre-env --version-label ${{ github.sha }}
+    
+    # Option 3: Déploiement sur un serveur via SSH
+    # - name: Déploiement via SSH
+    #   uses: appleboy/ssh-action@master
+    #   with:
+    #     host: ${{ secrets.SSH_HOST }}
+    #     username: ${{ secrets.SSH_USERNAME }}
+    #     key: ${{ secrets.SSH_KEY }}
+    #     script: |
+    #       cd /var/www/votre-app
+    #       git pull
+    #       cd backend && npm install && pm2 restart app
+    #       cd ../frontend && npm install && npm run build
+    
+    # Simulation de déploiement (pour le développement)
+    - name: Simulation de déploiement
+      if: ${{ !contains(github.ref, 'main') }}
+      run: |
+        echo "Simuler le déploiement sur un serveur de production"
+        echo "Application prête à être déployée"
+    
+    # Notification de déploiement réussi
+    - name: Notification de déploiement
+      run: |
+        echo "Déploiement terminé avec succès"
+        # Exemple d'ajout d'une notification Slack
+        # curl -X POST -H 'Content-type: application/json' --data '{"text":"Application déployée avec succès sur production !"}' ${{ secrets.SLACK_WEBHOOK_URL }}

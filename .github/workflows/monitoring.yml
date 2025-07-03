@@ -1,0 +1,47 @@
+name: Monitoring
+
+on:
+  schedule:
+    # Exécution toutes les 30 minutes
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    # Permet de déclencher manuellement le workflow
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Vérification de la santé du backend
+      uses: jtalk/url-health-check-action@v3
+      with:
+        # URL à remplacer par votre véritable URL de production lors du déploiement réel
+        url: https://votre-app-production.com/api/health
+        # Statut HTTP attendu
+        follow-redirect: true
+        max-attempts: 3
+        # Délai entre les tentatives (en secondes)
+        retry-delay: 5
+        # Délai d'attente max pour la réponse (en secondes)
+        retry-all: true
+    
+    - name: Vérification du frontend
+      uses: jtalk/url-health-check-action@v3
+      with:
+        # URL à remplacer par votre véritable URL de production lors du déploiement réel
+        url: https://votre-app-production.com
+        follow-redirect: true
+        max-attempts: 3
+        retry-delay: 5
+        retry-all: true
+    
+    # Vous pourriez également ajouter des étapes pour vérifier d'autres métriques
+    # comme l'utilisation des ressources, les temps de réponse, etc.
+    
+    - name: Notification en cas d'échec
+      if: ${{ failure() }}
+      # Ici, vous pourriez configurer une notification par email, Slack, etc.
+      run: |
+        echo "Échec des vérifications de santé ! Vérifiez l'état des services."
+        # Exemple d'envoi de notification Slack (nécessite une configuration supplémentaire)
+        # curl -X POST -H 'Content-type: application/json' --data '{"text":"Alerte : l'application est en panne !"}' ${{ secrets.SLACK_WEBHOOK_URL }}

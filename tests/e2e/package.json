@@ -1,0 +1,14 @@
+{
+  "name": "task-manager-e2e-tests",
+  "version": "1.0.0",
+  "description": "Tests E2E pour l'application de gestion de tâches",
+  "scripts": {
+    "test": "jest --verbose",
+    "test:e2e": "jest --verbose --testMatch='**/tests/e2e/**/*.test.js'"
+  },
+  "dependencies": {
+    "jest": "^29.5.0",
+    "selenium-webdriver": "^4.10.0",
+    "chromedriver": "^138.0.0"
+  }
+}
